@@ -1,74 +1,95 @@
+// SQLite3 CRUD operations
+// npm install sqlit3
+// Create a Book.sqilite file in Database folder
+// Run this flie with node CRUDBookSQLite.js
+//Test with Postman
+
 const express = require('express');
-const sqlite3 = require('sqlite3');
+const sqlit3 = require('sqlit3');
 const app = express();
 
-const db = new sqlite3.Database('./Database/Book.sqlite');
+// connect to database
+const db = new sqlit3.Database('./Database/Book.sqlite');
 
+//parse incoming requests
 app.use(express.json());
 
+// create books table if it dosen't exist
 db.run(`CREATE TABLE IF NOT EXISTS books (
-    id INTEGER PRIMARY KEY,
+    id INTERGATE PRIMARY KEY,
     title TEXT,
     author TEXT
 )`);
-
-app.get('/books', (req, res) => {
-    db.all('SELECT * FROM books', (err, rows) => {
-        if (err) {
+//route to get all books
+app.get("/books", (req, res) => {
+    db.all('SELECT * FROM books', (err,rows) => {
+        if(err){
             res.status(500).send(err);
-        }else {
+        } else {
             res.json(rows);
         }
     });
-});
+  });
 
-app.get('/books/:id', (req, res) => {
-    db.get('SELECT * FROM books WHERE id = ?', req.params.id, (err, row) => {
-        if (err) {
+//route to get book by id
+app.get("/books/:id", (req, res) => {
+    db.get('SELECT * FROM books WHERE id = ?', req.params.id, (err,row) =>{
+        if(err) {
             res.status(500).send(err);
-        }else {
-            if (!row) {
+        } else {
+            if(!row){
                 res.status(404).send('Book not found');
-            }else {
+            } else {
                 res.json(row);
             }
         }
-    
     });
-});
+  });
 
-app.post('/book', (req, res) => {
+  //route to create a new book
+  app.post('/books', (req,res) =>{
     const book = req.body;
-    db.run('INSERT INTO books (title, author) VALUES (?, ?)', book.title, book.author, function(err) {
-        if (err) {
+    db.run('INSERT INTO books (title, author) VALUE (?,?)',
+    book.title,
+    book.author,
+    function(err){
+        if (err){
             res.status(500).send(err);
-        }else {
+        } else {
             book.id = this.lastID;
             res.send(book);
         }
     });
-});
+  });
 
-app.put('/books/:id', (req, res) => {
+  //route to update a book
+  app.put('/books', (req,res) =>{
     const book = req.body;
-    db.run('UPDATE books SET tite = ?, author = ? WHERE id = ?', book.title, book.title, book.author, req.params.id, function(err) {
-        if (err) {
+    db.run('UPDATE books SET title = ?, author = ? WHERE id = ?',
+    book.title,
+    book.author,
+    req.params.id,
+    function(err){
+        if (err){
             res.status(500).send(err);
         } else {
             res.send(book);
         }
     });
-});
-
-app.delete('/books/:id', (req, res) => {
-    db.run('DELETE FROM books HERE id = ?', req.params.id, function(err) {
-        if (err) {
+  });  
+// route to delect a book
+  app.delete('/books/:id', (req, res) =>{
+    const book = req.body;
+    db.run('DELETE FROM books WHERE id = ?',
+    req.params.id,
+    function(err){
+        if (err){
             res.status(500).send(err);
-        }else {
-            res.send({});
+        } else {
+            res.send(book);
         }
     });
-});
-
+  });
+   
 const port = process.env.PORT || 3000;
-app.listen(port,() => console.log(`Example app listening at http://localhost:${port}`));
+app.listen(port, () => console.log(`Listening om port ${port}`));
